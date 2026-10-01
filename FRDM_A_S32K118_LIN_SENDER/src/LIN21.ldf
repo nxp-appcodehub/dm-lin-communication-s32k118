@@ -1,0 +1,67 @@
+/*
+*   (c) Copyright 2026 NXP
+*
+*   NXP Proprietary. This software is owned or controlled by NXP and may only be used strictly
+*   in accordance with the applicable license terms.  By expressly accepting
+*   such terms or by downloading, installing, activating and/or otherwise using
+*   the software, you are agreeing that you have read, and that you agree to
+*   comply with and are bound by, such license terms.  If you do not agree to
+*   be bound by the applicable license terms, then you may not retain,
+*   install, activate or otherwise use the software.
+*
+*   This file contains sample code only. It is not part of the production code deliverables.
+*/
+
+
+/*---------GLOBAL DEFINITIONS-----------*/
+LIN_description_file;
+LIN_protocol_version             = "2.1";
+LIN_language_version             = "2.1";
+LIN_speed                        = 19.2 kbps;
+/* ----------NODE DEFINITIONS---------- */
+Nodes {
+   Master:
+      CommMaster,                                               /* Master node name */
+      5 ms,                                                     /* Time base */
+      0.1 ms;                                                   /* Jitter */
+   Slaves:
+      CommSlave;
+}
+/* ----------SIGNAL DEFINITIONS---------- */
+Signals {
+   /* Signal_name         : Size,  Init,  Publisher,  Subscriber(s) */
+   MasterCommand          :  8,    0x00,  CommMaster, CommSlave;
+   SlaveStatus            :  8,    0x00,  CommSlave,  CommMaster;
+   SlaveCommError         :  1,    0x00,  CommSlave,  CommMaster;
+}
+/* ----------UNCONDITIONAL FRAME DEFINITIONS---------- */
+Frames {
+   CommMasterCmd       : 0x30, CommMaster  ,    1 {
+      MasterCommand       , 0;
+   }
+   CommSlaveStatus     : 0x33, CommSlave   ,    2 {
+      SlaveStatus         , 0;
+      SlaveCommError      , 8;
+   }
+}
+/* ----------NODE ATTRIBUTE DEFINITIONS---------- */
+Node_attributes {
+   CommSlave {
+      LIN_protocol               = "2.1";                    /* Node protocol version */
+      configured_NAD             = 0x02;                     /* configured NAD of node */
+      initial_NAD                = 0x0A;                     /* initial NAD of node */
+      product_id                 = 0x1E, 0x01, 0x00;         /* Product id */
+      response_error             = SlaveCommError;           /* Response error signal */
+      configurable_frames {
+         CommMasterCmd;
+         CommSlaveStatus;
+      }
+   }
+}
+/* ----------SCHEDULE TABLE DEFINITIONS---------- */
+Schedule_tables {
+   NormalTable {
+      CommMasterCmd                                          delay 50 ms;
+      CommSlaveStatus                                        delay 50 ms;
+   }
+}
